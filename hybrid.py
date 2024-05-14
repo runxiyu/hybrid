@@ -23,11 +23,11 @@ URL: https://git.runxiyu.org/runxiyu/current/hybrid.git"""
 
 @app.route('/hybrid/', methods=['GET'])
 def index():
-    return "No endpoint specified!"
+    return Response("No endpoint specified!", mimetype="text/plain")
 
 @app.route('/hybrid/version', methods=['GET'])
 def version():
-    return VERSION
+    return Response(VERSION, mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(port=8080)
