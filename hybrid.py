@@ -26,7 +26,7 @@ def index():
     return "No endpoint specified!"
 
 @app.route('/hybrid/version', methods=['GET'])
-def index():
+def version():
     return VERSION
 
 if __name__ == "__main__":
