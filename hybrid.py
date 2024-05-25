@@ -58,11 +58,11 @@ def verify_github_webhook_signature(payload_body, secret_token, signature_header
 def github():
     raw_data = request.data
     if not verify_github_webhook_signature(raw_data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")):
-        return Response("Who do you think you are?", status="403", mimetype="text/plain")
+        return Response(None, status="403")
     jq = json.loads(raw_data)
     with open("/srv/hybrid/github-results.json", "w") as fd:
         json.dump(jq, fd, indent="\t")
-    return Response(None, mimetype="text/plain")
+    return Response(None)
 
 if __name__ == "__main__":
     app.run(port=8082)
