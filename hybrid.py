@@ -10,7 +10,7 @@
 
 from flask import Flask, render_template, request, redirect, abort
 from flask.wrappers import Response
-import time, os, random, shutil
+import time, os, random, shutil, hashlib, hmac
 
 app = Flask(__name__)
 
@@ -18,6 +18,9 @@ VERSION = """hybrid v0.1
 
 License: GNU Affero General Public License v3.0 only
 URL: https://git.runxiyu.org/runxiyu/current/hybrid.git"""
+
+with open("/srv/hybrid/github_webhook_secret.txt", "r") as fd:
+    GITHUB_WEBHOOK_SECRET = fd.readline().strip()
 
 # REMEMBER: You can only listen inside /hybrid/. Everything outside is
 #           supposed to be static.
@@ -42,13 +45,25 @@ def test_post():
     return Response("/tmp/post_%d_%d" % (ts, r), mimetype="text/plain")
 
 
-@app.route("/hybrid/github", methods=["GET", "POST"])
+def verify_github_webhook_signature(payload_body, secret_token, signature_header) -> bool:
+    if not signature_header:
+        return False
+    hash_object = hmac.new(secret_token.encode('utf-8'), msg=payload_body, digestmod=hashlib.sha256)
+    expected_signature = "sha256=" + hash_object.hexdigest()
+    if hmac.compare_digest(expected_signature, signature_header):
+        return True
+    return False
+
+@app.route("/hybrid/github", methods=["POST"])
 def github():
+    data = request.data
+    if not verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")):
+        return Response("wrong secret", status=403, mimetype="text/plain")
     ts = int(time.time())
     r = random.randint(0, 10000)
     with open("/tmp/github_%d_%d" % (ts, r), "wb") as fd:
-        shutil.copyfileobj(request.stream, fd)
-    return Response("/tmp/github_%d_%d" % (ts, r), mimetype="text/plain")
+        fd.write(data)
+    return Response("%d %d" % (ts, r), mimetype="text/plain")
 
 
 if __name__ == "__main__":
