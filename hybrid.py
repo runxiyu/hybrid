@@ -109,37 +109,38 @@ def github() -> response_t:
         ) as r:
             shutil.copyfileobj(r.raw, fd)
         fd.flush()
+        proc = subprocess.run(
+            [
+                "git",
+                "send-email",
+                "--from",
+                FROM_ADDRESS_WITH_NAME,
+                "--8bit-encoding",
+                "UTF-8",
+                "--to",
+                to_address,
+                "--confirm",
+                "never",
+                # "--suppress-cc",
+                # "all",
+                "--reply-to",
+                REPLY_TO,
+                "--envelope-sender",
+                FROM_ADDRESS,
+                "--no-smtp-auth",
+                "--smtp-server",
+                "localhost",
+                "--smtp-server-port",
+                "25",
+                fd.name,
+            ],
+            capture_output=True,
+        )
         try:
-            subprocess.run(
-                [
-                    "git",
-                    "send-email",
-                    "--from",
-                    FROM_ADDRESS_WITH_NAME,
-                    "--8bit-encoding",
-                    "UTF-8",
-                    "--to",
-                    to_address,
-                    "--confirm",
-                    "never",
-                    # "--suppress-cc",
-                    # "all",
-                    "--reply-to",
-                    REPLY_TO,
-                    "--envelope-sender",
-                    FROM_ADDRESS,
-                    "--no-smtp-auth",
-                    "--smtp-server",
-                    "localhost",
-                    "--smtp-server-port",
-                    "25",
-                    fd.name,
-                ],
-                check=True,
-            )
+            proc.check_returncode()
         except subprocess.CalledProcessError:
             return flask.Response(
-                "git-send-email returned non-zero exit status",
+                proc.stderr,
                 status="500",
                 mimetype="text/plain",
             )
