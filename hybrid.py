@@ -56,15 +56,10 @@ def verify_github_webhook_signature(payload_body, secret_token, signature_header
 
 @app.route("/hybrid/github", methods=["POST"])
 def github():
-    data = request.data
-    if not verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")):
-        return Response("wrong secret", status=403, mimetype="text/plain")
-    ts = int(time.time())
-    r = random.randint(0, 10000)
-    with open("/tmp/github_%d_%d" % (ts, r), "wb") as fd:
-        fd.write(data)
-    return Response("%d %d" % (ts, r), mimetype="text/plain")
-
+    data = request.json
+    data["X-runxiyu-GitHub-Signature-Validation"] = bool(verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")))
+    with open("/srv/hybrid/github-results.json", "w") as fd:
+        json.dump(data, fd, indent="\t")
 
 if __name__ == "__main__":
     app.run(port=8082)
