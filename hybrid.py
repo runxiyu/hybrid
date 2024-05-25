@@ -10,7 +10,7 @@
 
 from flask import Flask, render_template, request, redirect, abort
 from flask.wrappers import Response
-import time, os, random, shutil, hashlib, hmac
+import time, os, random, shutil, hashlib, hmac, json
 
 app = Flask(__name__)
 
@@ -56,7 +56,7 @@ def verify_github_webhook_signature(payload_body, secret_token, signature_header
 
 @app.route("/hybrid/github", methods=["POST"])
 def github():
-    data = request.json
+    data = json.loads(request.data)
     data["X-runxiyu-GitHub-Signature-Validation"] = bool(verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")))
     with open("/srv/hybrid/github-results.json", "w") as fd:
         json.dump(data, fd, indent="\t")
