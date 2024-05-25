@@ -10,7 +10,7 @@
 
 from flask import Flask, render_template, request, redirect, abort
 from flask.wrappers import Response
-import time, os, random
+import time, os, random, shutil
 
 app = Flask(__name__)
 
@@ -40,6 +40,15 @@ def test_post():
     with open("/tmp/post_%d_%d" % (ts, r), "wb") as fd:
         fd.write(request.stream.read())
     return Response("/tmp/post_%d_%d" % (ts, r), mimetype="text/plain")
+
+
+@app.route("/hybrid/github", methods=["GET", "POST"])
+def github():
+    ts = int(time.time())
+    r = random.randint(0, 10000)
+    with open("/tmp/github_%d_%d" % (ts, r), "wb") as fd:
+        shutil.copyfileobj(request.stream, fd)
+    return Response("/tmp/github_%d_%d" % (ts, r), mimetype="text/plain")
 
 
 if __name__ == "__main__":
