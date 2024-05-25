@@ -57,10 +57,11 @@ def verify_github_webhook_signature(payload_body, secret_token, signature_header
 @app.route("/hybrid/github", methods=["POST"])
 def github():
     try:
-        data = json.loads(request.data)
-        data["X-runxiyu-GitHub-Signature-Validation"] = bool(verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")))
+        data = request.data
+        jq = json.loads(data)
+        jq["X-runxiyu-GitHub-Signature-Validation"] = bool(verify_github_webhook_signature(data, GITHUB_WEBHOOK_SECRET, request.headers.get("X-Hub-Signature-256", "")))
         with open("/srv/hybrid/github-results.json", "w") as fd:
-            json.dump(data, fd, indent="\t")
+            json.dump(jq, fd, indent="\t")
         return Response("ok", mimetype="text/plain")
     except Exception as e:
         return Response(repr(e))
