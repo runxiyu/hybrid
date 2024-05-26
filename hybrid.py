@@ -65,7 +65,7 @@ def version() -> response_t:
     return flask.Response(VERSION, mimetype="text/plain")
 
 
-@app.route("/hybrid/test/post", methods=["GET", "POST"])
+@app.route("/hybrid/test/post", methods=["POST"])
 def test_post() -> response_t:
     ts = int(time.time())
     r = random.randint(0, 10000)
