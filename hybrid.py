@@ -97,6 +97,12 @@ def github() -> response_t:
         flask.request.headers.get("X-Hub-Signature-256", ""),
     ):
         return flask.Response(None, status=403)
+    if flask.request.headers.get("X-GitHub-Event") == "ping":
+        return flask.Response("PONG", status=200, mimetype="text/plain")
+    elif flask.request.headers.get("X-GitHub-Event") == "pull-request":
+        pass
+    else:
+        return flask.Response("I don't know this event", status=400, mimetype="text/plain")
     jq = json.loads(raw_data)
     if jq["action"] != "opened":
         return flask.Response(None, status=200)
