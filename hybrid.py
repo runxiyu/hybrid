@@ -99,7 +99,7 @@ def github() -> response_t:
         return flask.Response(None, status=403)
     if flask.request.headers.get("X-GitHub-Event") == "ping":
         return flask.Response("PONG", status=200, mimetype="text/plain")
-    elif flask.request.headers.get("X-GitHub-Event") == "pull-request":
+    elif flask.request.headers.get("X-GitHub-Event") == "pull_request":
         pass
     else:
         return flask.Response("I don't know this event", status=400, mimetype="text/plain")
