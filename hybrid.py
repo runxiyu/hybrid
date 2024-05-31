@@ -73,6 +73,10 @@ def test_post() -> response_t:
         fd.write(flask.request.stream.read())
     return flask.Response("/tmp/post_%d_%d" % (ts, r), mimetype="text/plain")
 
+@app.route("/hybrid/test/sleep", methods=["GET"])
+def test_sleep() -> response_t:
+    sleep(10)
+    return flask.Response("ok", mimetype="text/plain")
 
 def verify_github_webhook_signature(
     payload_body: bytes, secret_token: str, signature_header: str
