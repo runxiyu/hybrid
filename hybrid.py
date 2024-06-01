@@ -75,7 +75,7 @@ def test_post() -> response_t:
 
 @app.route("/hybrid/test/sleep", methods=["GET"])
 def test_sleep() -> response_t:
-    time.sleep(10)
+    time.sleep(5)
     return flask.Response("ok", mimetype="text/plain")
 
 def verify_github_webhook_signature(
